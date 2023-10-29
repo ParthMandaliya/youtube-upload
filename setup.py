@@ -31,7 +31,7 @@ setup_kwargs = {
     "install_requires":[
         'google-api-python-client',
         'oauth2client',
-        'progressbar2'
+        'progressbar2 @ git+https://github.com/wolph/python-progressbar.git'
     ]
 }
 
