@@ -41,8 +41,7 @@ def catch_exceptions(exit_codes, fun, *args, **kwargs):
     in the exit_codes dictionary. Return 0 if no exception is raised.
     """
     try:
-        fun(*args, **kwargs)
-        return 0
+        return fun(*args, **kwargs)
     except tuple(exit_codes.keys()) as exc:
         debug("[{0}] {1}".format(exc.__class__.__name__, exc))
         return exit_codes[exc.__class__]
