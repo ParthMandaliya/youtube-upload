@@ -190,7 +190,7 @@ def parse_options_error(parser, options):
         raise OptionsError(msg)
 
 
-def run_main(parser, options, args, output=sys.stdout):
+def run_main(parser, options, args):
     """Run the main scripts from the parsed options/args."""
     parse_options_error(parser, options)
     youtube = get_youtube_handler(options)
@@ -208,7 +208,7 @@ def run_main(parser, options, args, output=sys.stdout):
             if options.playlist:
                 playlists.add_video_to_playlist(youtube, video_id,
                                                 title=lib.to_utf8(options.playlist), privacy=options.privacy)
-            output.write(video_id + "\n")
+            return video_id
     else:
         raise AuthenticationError("Cannot get youtube resource")
 
