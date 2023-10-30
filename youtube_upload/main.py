@@ -280,7 +280,7 @@ def main(arguments):
             options.description = file.read()
 
     try:
-        run_main(parser, options, args)
+        return run_main(parser, options, args)
     except googleapiclient.errors.HttpError as error:
         response = bytes.decode(error.content, encoding=lib.get_encoding()).strip()
         raise RequestError(u"Server response: {0}".format(response))
