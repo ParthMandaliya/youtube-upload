@@ -87,7 +87,7 @@ def get_progress_info():
         ])
 
         def _callback(total_size, completed):
-            if not hasattr(bar, "next_update"):
+            if hasattr(bar, "next_update"):
                 if hasattr(bar, "maxval"):
                     bar.maxval = total_size
                 else:
