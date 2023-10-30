@@ -44,7 +44,7 @@ def catch_exceptions(exit_codes, fun, *args, **kwargs):
         return fun(*args, **kwargs)
     except tuple(exit_codes.keys()) as exc:
         debug("[{0}] {1}".format(exc.__class__.__name__, exc))
-        raise exc
+        return exc.__class__  # exit_codes[exc.__class__]
 
 def first(it):
     """Return first element in iterable."""
