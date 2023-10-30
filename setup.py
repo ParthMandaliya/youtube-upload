@@ -23,11 +23,6 @@ setup_kwargs = {
         'Programming Language :: Python',
         'Topic :: Internet :: WWW/HTTP',
     ],
-    "entry_points": {
-        'console_scripts': [
-            'youtube-upload = youtube_upload.main:run'
-        ],
-    },
     "install_requires":[
         'google-api-python-client',
         'oauth2client',
