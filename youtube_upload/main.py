@@ -96,6 +96,8 @@ def get_progress_info():
             bar.update(completed)
 
         def _finish():
+            if not isinstance(bar.max_value, int):
+                bar.max_value = bar.value
             if hasattr(bar, "next_update"):
                 return bar.finish()
 
