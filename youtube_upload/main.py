@@ -87,19 +87,13 @@ def get_progress_info():
         ])
 
         def _callback(total_size, completed):
-            if hasattr(bar, "next_update"):
-                if hasattr(bar, "maxval"):
-                    bar.maxval = total_size
-                else:
-                    bar.max_value = total_size
+            if not isinstance(bar.max_value, int):
+                bar.max_value = total_size
                 bar.start()
             bar.update(completed)
 
         def _finish():
-            if not isinstance(bar.max_value, int):
-                bar.max_value = bar.value
-            if hasattr(bar, "next_update"):
-                return bar.finish()
+            return bar.finish() if isinstance(bar.max_value, int) else None
 
         return progressinfo(callback=_callback, finish=_finish)
     else:
@@ -110,8 +104,6 @@ def get_category_id(category):
     """Return category ID from its name."""
     if category:
         if category in categories.IDS:
-            ncategory = categories.IDS[category]
-            debug("Using category: {0} (id={1})".format(category, ncategory))
             return str(categories.IDS[category])
         else:
             msg = "{0} is not a valid category".format(category)
@@ -158,7 +150,6 @@ def upload_youtube_video(youtube, options, video_path, total_videos, index):
         },
     }
 
-    debug("Start upload: {0}".format(video_path))
     try:
         video_id = upload_video.upload(youtube, video_path,
                                        request_body, progress_callback=progress.callback,
@@ -174,8 +165,6 @@ def get_youtube_handler(options):
     default_credentials = os.path.join(home, ".youtube-upload-credentials.json")
     client_secrets = options.client_secrets or os.path.join(home, ".client_secrets.json")
     credentials = options.credentials_file or default_credentials
-    debug("Using client secrets: {0}".format(client_secrets))
-    debug("Using credentials file: {0}".format(credentials))
     get_code_callback = (auth.browser.get_code
                          if options.auth_browser else auth.console.get_code)
     return auth.get_resource(client_secrets, credentials,
@@ -201,7 +190,6 @@ def run_main(parser, options, args):
         for index, video_path in enumerate(args):
             video_id = upload_youtube_video(youtube, options, video_path, len(args), index)
             video_url = WATCH_VIDEO_URL.format(id=video_id)
-            debug("Video URL: {0}".format(video_url))
             if options.open_link:
                 open_link(video_url)  # Opens the Youtube Video's link in a webbrowser
 
