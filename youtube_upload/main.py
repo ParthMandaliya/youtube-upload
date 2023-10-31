@@ -90,10 +90,12 @@ def get_progress_info():
             if not isinstance(bar.max_value, int):
                 bar.max_value = total_size
                 bar.start()
-            bar.update(completed)
+            else:
+                bar.update(completed)
 
         def _finish():
-            return bar.finish() if isinstance(bar.max_value, int) else None
+            if isinstance(bar.max_value, int):
+                return bar.finish()
 
         return progressinfo(callback=_callback, finish=_finish)
     else:
