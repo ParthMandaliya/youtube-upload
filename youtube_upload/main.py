@@ -94,8 +94,10 @@ def get_progress_info():
                 bar.update(completed)
 
         def _finish():
-            if isinstance(bar.max_value, int):
-                return bar.finish()
+            if not isinstance(bar.max_value, int):
+                bar.max_value = 100
+                bar.start()
+            return bar.finish()
 
         return progressinfo(callback=_callback, finish=_finish)
     else:
