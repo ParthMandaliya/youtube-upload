@@ -114,7 +114,7 @@ def get_category_id(category):
             raise InvalidCategory(msg)
 
 
-def upload_youtube_video(youtube, options, video_path, total_videos, index):
+def upload_youtube_video(youtube, options, video_path, total_videos, index, max_retries=1):
     """Upload video with index (for split videos)."""
     u = lib.to_utf8
     title = u(options.title)
@@ -129,7 +129,6 @@ def upload_youtube_video(youtube, options, video_path, total_videos, index):
     ns = dict(title=title, n=index + 1, total=total_videos)
     title_template = u(options.title_template)
     complete_title = (title_template.format(**ns) if total_videos > 1 else title)
-    progress = get_progress_info()
     category_id = get_category_id(options.category)
     request_body = {
         "snippet": {
@@ -154,13 +153,20 @@ def upload_youtube_video(youtube, options, video_path, total_videos, index):
         },
     }
 
-    try:
-        video_id = upload_video.upload(youtube, video_path,
-                                       request_body, progress_callback=progress.callback,
-                                       chunksize=options.chunksize)
-    finally:
-        progress.finish()
-    return video_id
+    for i in range(max_retries):
+        try:
+            progress = get_progress_info()
+            video_id = upload_video.upload(
+                youtube, video_path, request_body,
+                progress_callback=progress.callback,
+                chunksize=options.chunksize
+            )
+        except Exception as e:
+            debug(f"An error occured while uploading the video: {e}.")
+            debug(f"Retrying ({i+1}/{max_retries})...")
+        finally:
+            progress.finish()
+        return video_id
 
 
 def get_youtube_handler(options):
@@ -185,14 +191,14 @@ def parse_options_error(parser, options):
         raise OptionsError(msg)
 
 
-def run_main(parser, options, args):
+def run_main(parser, options, args, max_retries=1):
     """Run the main scripts from the parsed options/args."""
     parse_options_error(parser, options)
     youtube = get_youtube_handler(options)
 
     if youtube:
         for index, video_path in enumerate(args):
-            video_id = upload_youtube_video(youtube, options, video_path, len(args), index)
+            video_id = upload_youtube_video(youtube, options, video_path, len(args), index, max_retries)
             video_url = WATCH_VIDEO_URL.format(id=video_id)
             if options.open_link:
                 open_link(video_url)  # Opens the Youtube Video's link in a webbrowser
@@ -229,6 +235,8 @@ def main(arguments):
                       default="public", help='Privacy status (public | unlisted | private)')
     parser.add_option('', '--publish-at', dest='publish_at', metavar="datetime",
                       default=None, help='Publish date (ISO 8601): YYYY-MM-DDThh:mm:ss.sZ')
+    parser.add_option('', '--max-retries', dest='max_retries', type="int",
+                      default=1, help='Maximum number of retries (default: 1)')
     parser.add_option('', '--license', dest='license', metavar="string",
                       choices=('youtube', 'creativeCommon'), default='youtube',
                       help='License for the video, either "youtube" (the default) or "creativeCommon"')
@@ -274,7 +282,7 @@ def main(arguments):
             options.description = file.read()
 
     try:
-        return run_main(parser, options, args)
+        return run_main(parser, options, args, max_retries=options.max_retries)
     except googleapiclient.errors.HttpError as error:
         response = bytes.decode(error.content, encoding=lib.get_encoding()).strip()
         raise RequestError(u"Server response: {0}".format(response))
