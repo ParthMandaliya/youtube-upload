@@ -154,6 +154,7 @@ def upload_youtube_video(youtube, options, video_path, total_videos, index, max_
     }
 
     for i in range(max_retries):
+        debug(f"Uploading try ({i+1}/{max_retries})...")
         try:
             progress = get_progress_info()
             video_id = upload_video.upload(
@@ -165,7 +166,6 @@ def upload_youtube_video(youtube, options, video_path, total_videos, index, max_
             return video_id
         except Exception as e:
             debug(f"An error occured while uploading the video: {e}.")
-            debug(f"Retrying ({i+1}/{max_retries})...")
     return None
 
 
