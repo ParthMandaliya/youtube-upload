@@ -161,12 +161,13 @@ def upload_youtube_video(youtube, options, video_path, total_videos, index, max_
                 progress_callback=progress.callback,
                 chunksize=options.chunksize
             )
+            return video_id
         except Exception as e:
             debug(f"An error occured while uploading the video: {e}.")
             debug(f"Retrying ({i+1}/{max_retries})...")
         finally:
             progress.finish()
-        return video_id
+    return None
 
 
 def get_youtube_handler(options):
